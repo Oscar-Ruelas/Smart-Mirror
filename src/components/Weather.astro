@@ -2,7 +2,7 @@
 ---
 
 <script>
-  // Get API key from server-side .ENV file
+  // Get API key from server side .ENV file
   const APIKEY = import.meta.env.PUBLIC_WEATHER_API;
   
   // API endpoint URL
@@ -34,7 +34,7 @@
           });
   };
   
-  // Check if geolocation is available
+  // Get user's current location
   if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
           position => {
@@ -43,26 +43,33 @@
               fetchWeather(latitude, longitude);
           },
           error => {
-              // Detailed error handling
-              switch (error.code) {
-                  case error.PERMISSION_DENIED:
-                      alert('Location access denied by the user.');
-                      break;
-                  case error.POSITION_UNAVAILABLE:
-                      alert('Location information is unavailable.');
-                      break;
-                  case error.TIMEOUT:
-                      alert('The request to get your location timed out.');
-                      break;
-                  default:
-                      alert('An unknown error occurred while retrieving your location.');
-                      break;
-              }
-              console.error('Error getting location:', error);
+              console.error('Error with geolocation:', error);
+              alert('Could not retrieve your location. Showing default city (Cheney) weather.');
+              // Fallback to Cheney
+              const fallbackCityUrl = `${queryEndpoint}?q=Cheney&appid=${APIKEY}&units=${queryUnits}`;
+              fetch(fallbackCityUrl)
+                  .then(response => response.json())
+                  .then(data => {
+                      console.log('Fallback Data:', data); // Debug
+                      city.textContent = data.name;
+                      temp.textContent = `${data.main.temp}°F`;
+                      icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
+                  })
+                  .catch(fallbackError => console.error('Error fetching fallback weather:', fallbackError));
           }
       );
   } else {
-      alert('Geolocation is not supported by your browser.');
+      alert('Geolocation not supported by your browser. Showing default city (Cheney) weather.');
+      const fallbackCityUrl = `${queryEndpoint}?q=Cheney&appid=${APIKEY}&units=${queryUnits}`;
+      fetch(fallbackCityUrl)
+          .then(response => response.json())
+          .then(data => {
+              console.log('Fallback Data:', data); // Debug
+              city.textContent = data.name;
+              temp.textContent = `${data.main.temp}°F`;
+              icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
+          })
+          .catch(fallbackError => console.error('Error fetching fallback weather:', fallbackError));
   }
   </script>
   
