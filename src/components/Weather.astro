@@ -2,82 +2,52 @@
 ---
 
 <script>
-  // Get API key from server side .ENV file
-  const APIKEY = import.meta.env.PUBLIC_WEATHER_API;
+// Get API key from server side .ENV file
+const APIKEY = import.meta.env.PUBLIC_WEATHER_API;
+
+// API endpoint URL
+const queryEndpoint = 'https://api.openweathermap.org/data/2.5/weather';
+// City
+const queryCity = 'Panorama City';
+// Units for Farenheit
+const queryUnits = 'imperial';
+
+// URL query string
+const url = `${queryEndpoint}?q=${queryCity}&appid=${APIKEY}&units=${queryUnits}`;
+
+// Get DOM Elements
+const city = document.querySelector('.city');
+const temp = document.querySelector('.temp');
+const icon = document.querySelector('.icon');
+
+// Using fetch to get data
+fetch(url)
+.then( response => response.json() )
+.then( data => {
+
+  // Check-check: Is data good? 
+  console.log( data );
   
-  // API endpoint URL
-  const queryEndpoint = 'https://api.openweathermap.org/data/2.5/weather';
-  // Units for Fahrenheit
-  const queryUnits = 'imperial';
+  // Get Container for Weather   
+  const weatherContainer = document.querySelector('.weather');
+    
+    // Set DOM Elements
+    city.textContent = data.name; 
+    temp.textContent = data.main.temp;
+
+    icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`)
   
-  // Get DOM Elements
-  const city = document.querySelector('.city');
-  const temp = document.querySelector('.temp');
-  const icon = document.querySelector('.icon');
-  
-  // Function to fetch weather data
-  const fetchWeather = (lat, lon) => {
-      const url = `${queryEndpoint}?lat=${lat}&lon=${lon}&appid=${APIKEY}&units=${queryUnits}`;
-      fetch(url)
-          .then(response => response.json())
-          .then(data => {
-              console.log(data); // Debug: Check fetched data
-  
-              // Update DOM elements
-              city.textContent = data.name;
-              temp.textContent = `${data.main.temp}°F`;
-              icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
-          })
-          .catch(error => {
-              console.error('Error fetching weather data:', error);
-              alert('Failed to fetch weather data. Please try again later.');
-          });
-  };
-  
-  // Get user's current location
-  if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-          position => {
-              const { latitude, longitude } = position.coords;
-              console.log('Latitude:', latitude, 'Longitude:', longitude); // Debug
-              fetchWeather(latitude, longitude);
-          },
-          error => {
-              console.error('Error with geolocation:', error);
-              alert('Could not retrieve your location. Showing default city (Cheney) weather.');
-              // Fallback to Cheney
-              const fallbackCityUrl = `${queryEndpoint}?q=Cheney&appid=${APIKEY}&units=${queryUnits}`;
-              fetch(fallbackCityUrl)
-                  .then(response => response.json())
-                  .then(data => {
-                      console.log('Fallback Data:', data); // Debug
-                      city.textContent = data.name;
-                      temp.textContent = `${data.main.temp}°F`;
-                      icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
-                  })
-                  .catch(fallbackError => console.error('Error fetching fallback weather:', fallbackError));
-          }
-      );
-  } else {
-      alert('Geolocation not supported by your browser. Showing default city (Cheney) weather.');
-      const fallbackCityUrl = `${queryEndpoint}?q=Cheney&appid=${APIKEY}&units=${queryUnits}`;
-      fetch(fallbackCityUrl)
-          .then(response => response.json())
-          .then(data => {
-              console.log('Fallback Data:', data); // Debug
-              city.textContent = data.name;
-              temp.textContent = `${data.main.temp}°F`;
-              icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
-          })
-          .catch(fallbackError => console.error('Error fetching fallback weather:', fallbackError));
-  }
-  </script>
-  
-  <!-- Weather -->
-  <section class="weather">
+});
+</script>
+
+
+<!-- Weather -->
+<section class="weather">
+
       <h1>Weather</h1>
       <data class="city">City</data>
       <data class="temp">Temp</data>
-      <img class="icon" src="https://via.placeholder.com/150" alt="Weather Icon">
-  </section>
-  
+      <img class="icon" 
+      src="https://via.placeholder.com/150" alt="Placeholder">
+      
+</section>
