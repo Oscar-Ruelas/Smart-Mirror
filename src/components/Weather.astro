@@ -2,52 +2,75 @@
 ---
 
 <script>
-// Get API key from server side .ENV file
-const APIKEY = import.meta.env.PUBLIC_WEATHER_API;
-
-// API endpoint URL
-const queryEndpoint = 'https://api.openweathermap.org/data/2.5/weather';
-// City
-const queryCity = 'Cheney';
-// Units for Farenheit
-const queryUnits = 'imperial';
-
-// URL query string
-const url = `${queryEndpoint}?q=${queryCity}&appid=${APIKEY}&units=${queryUnits}`;
-
-// Get DOM Elements
-const city = document.querySelector('.city');
-const temp = document.querySelector('.temp');
-const icon = document.querySelector('.icon');
-
-// Using fetch to get data
-fetch(url)
-.then( response => response.json() )
-.then( data => {
-
-  // Check-check: Is data good? 
-  console.log( data );
+  // Get API key from server-side .ENV file
+  const APIKEY = import.meta.env.PUBLIC_WEATHER_API;
   
-  // Get Container for Weather   
-  const weatherContainer = document.querySelector('.weather');
-    
-    // Set DOM Elements
-    city.textContent = data.name; 
-    temp.textContent = data.main.temp;
-
-    icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`)
+  // API endpoint URL
+  const queryEndpoint = 'https://api.openweathermap.org/data/2.5/weather';
+  // Units for Fahrenheit
+  const queryUnits = 'imperial';
   
-});
-</script>
-
-
-<!-- Weather -->
-<section class="weather">
-
+  // Get DOM Elements
+  const city = document.querySelector('.city');
+  const temp = document.querySelector('.temp');
+  const icon = document.querySelector('.icon');
+  
+  // Function to fetch weather data
+  const fetchWeather = (lat, lon) => {
+      const url = `${queryEndpoint}?lat=${lat}&lon=${lon}&appid=${APIKEY}&units=${queryUnits}`;
+      fetch(url)
+          .then(response => response.json())
+          .then(data => {
+              console.log(data); // Debug: Check fetched data
+  
+              // Update DOM elements
+              city.textContent = data.name;
+              temp.textContent = `${data.main.temp}°F`;
+              icon.setAttribute('src', `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`);
+          })
+          .catch(error => {
+              console.error('Error fetching weather data:', error);
+              alert('Failed to fetch weather data. Please try again later.');
+          });
+  };
+  
+  // Check if geolocation is available
+  if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+          position => {
+              const { latitude, longitude } = position.coords;
+              console.log('Latitude:', latitude, 'Longitude:', longitude); // Debug
+              fetchWeather(latitude, longitude);
+          },
+          error => {
+              // Detailed error handling
+              switch (error.code) {
+                  case error.PERMISSION_DENIED:
+                      alert('Location access denied by the user.');
+                      break;
+                  case error.POSITION_UNAVAILABLE:
+                      alert('Location information is unavailable.');
+                      break;
+                  case error.TIMEOUT:
+                      alert('The request to get your location timed out.');
+                      break;
+                  default:
+                      alert('An unknown error occurred while retrieving your location.');
+                      break;
+              }
+              console.error('Error getting location:', error);
+          }
+      );
+  } else {
+      alert('Geolocation is not supported by your browser.');
+  }
+  </script>
+  
+  <!-- Weather -->
+  <section class="weather">
       <h1>Weather</h1>
       <data class="city">City</data>
       <data class="temp">Temp</data>
-      <img class="icon" 
-      src="https://via.placeholder.com/150" alt="Placeholder">
-      
-</section>
+      <img class="icon" src="https://via.placeholder.com/150" alt="Weather Icon">
+  </section>
+  
